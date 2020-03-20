@@ -1,0 +1,60 @@
+# ===================================================================
+# COMMON APPLICATION PROPERTIES
+#
+# Properties defined in this file will always be loaded, for any
+# environment, regardless of the specified spring profile.
+#
+# Basically, this file should be used for:
+#  - defining business values
+#  - defining default values for properties
+# ===================================================================
+
+## NOTE: To test the backend, it si necessary to run a Docker Container with a MySQL database (see docker-compose file)
+
+#Generic
+alarmclock:
+  scheduling: "0 0/1 * * * ?"
+  # Music folder
+  music-folder: data/musics/
+  default-music: default.wav
+  # Domoticz
+
+#
+server:
+  port: 8082
+  compression:
+    # Enable response compression
+    enabled: true
+    # The comma-separated list of mime types that should be compressed
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    # Compress the response only if the response size is at least 1KB
+    min-response-size: 1024
+
+spring:
+  # Misc
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  # Profiles
+  profiles:
+    include: dev
+
+  # DB
+  datasource:
+    # H2
+    url: jdbc:h2:./h2;DB_CLOSE_ON_EXIT=FALSE
+  # https://stackoverflow.com/questions/30549489/what-is-this-spring-jpa-open-in-view-true-property-in-spring-boot/48222934
+  jpa:
+    open-in-view: false
+    database: MYSQL
+    show-sql: false
+    hibernate:
+      ddl-auto: create  # Flush db at each start
+
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+

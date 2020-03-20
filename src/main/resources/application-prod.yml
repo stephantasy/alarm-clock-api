@@ -1,0 +1,31 @@
+# ===================================================================
+# APPLICATION PROPERTIES for the PROD environment
+#
+# Properties defined in this file will be used when running the
+# application in the Production environment.
+#
+# Basically, this file should be used for:
+#  - overriding default values
+#  - specific Production properties
+# ===================================================================
+
+# Port
+server:
+  port: 8081
+
+spring:
+  # Profiles
+  profiles:
+    include: prod
+
+  # DB
+  datasource:
+    # MySQL
+    platform: mariadb
+    url: jdbc:mariadb://localhost:3306/db_alarmclock #?useSSL=false&allowPublicKeyRetrieval=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: sby
+    password: ac1234!
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update  # Update db at each start, no flushing
