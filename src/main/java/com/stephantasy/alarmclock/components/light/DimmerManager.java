@@ -54,6 +54,7 @@ public class DimmerManager implements Runnable {
             if(previousbrightness != brightness) {
                 setValue(brightness);
             }
+            previousbrightness = brightness;
             tempStep += step;
             brightness = (int) tempStep;
 
