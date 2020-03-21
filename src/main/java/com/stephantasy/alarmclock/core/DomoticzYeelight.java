@@ -141,12 +141,12 @@ public class DomoticzYeelight {
         int cw = 0, t = 0, ww = 0;
 
         if(lightParams.mode == LightMode.WHITE) {
-            cw = lightParams.color1;
+            cw = lightParams.getColor().color1;
             t = ww = 255 - cw;
         }else {
-            r = lightParams.color1;
-            g = lightParams.color2;
-            b = lightParams.color3;
+            r = lightParams.getColor().color1;
+            g = lightParams.getColor().color2;
+            b = lightParams.getColor().color3;
         }
 
         // {"b":0,"cw":128,"g":0,"m":2,"r":0,"t":128,"ww":128}

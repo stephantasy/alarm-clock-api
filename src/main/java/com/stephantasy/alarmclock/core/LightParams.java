@@ -2,10 +2,21 @@ package com.stephantasy.alarmclock.core;
 
 public class LightParams {
     LightMode mode =LightMode.WHITE;
-    int color1 = 0;
-    int color2 = 0;
-    int color3 = 0;
+    Color color;
     int brightness = 0;
+    boolean gradient = false;
+    Color colorFrom;
+    Color colorTo;
+
+    public LightParams() {
+    }
+
+    public LightParams(Color colorFrom, Color colorTo) {
+        this.gradient = true;
+        this.color = colorFrom;
+        this.colorFrom = colorFrom;
+        this.colorTo = colorTo;
+    }
 
     public LightMode getMode() {
         return mode;
@@ -15,35 +26,43 @@ public class LightParams {
         this.mode = mode;
     }
 
-    public int getColor1() {
-        return color1;
-    }
-
-    public void setColor1(int color1) {
-        this.color1 = color1;
-    }
-
-    public int getColor2() {
-        return color2;
-    }
-
-    public void setColor2(int color2) {
-        this.color2 = color2;
-    }
-
-    public int getColor3() {
-        return color3;
-    }
-
-    public void setColor3(int color3) {
-        this.color3 = color3;
-    }
-
     public int getBrightness() {
         return brightness;
     }
 
     public void setBrightness(int brightness) {
         this.brightness = brightness;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public boolean isGradient() {
+        return gradient;
+    }
+
+    public void setGradient(boolean gradient) {
+        this.gradient = gradient;
+    }
+
+    public Color getColorFrom() {
+        return colorFrom;
+    }
+
+    public void setColorFrom(Color colorFrom) {
+        this.colorFrom = colorFrom;
+    }
+
+    public Color getColorTo() {
+        return colorTo;
+    }
+
+    public void setColorTo(Color colorTo) {
+        this.colorTo = colorTo;
     }
 }

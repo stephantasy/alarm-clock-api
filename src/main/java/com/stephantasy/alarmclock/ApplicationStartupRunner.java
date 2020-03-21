@@ -38,7 +38,7 @@ public class ApplicationStartupRunner implements ApplicationRunner {
             // Add data for tests
             for (Alarm a : List.of(
 //                    new Alarm("alarm 001", LocalDateTime.now().minusMinutes(1).withSecond(0), "Desc", new Recurrence(RecurrenceType.Once, new boolean[]{false, false, false, false, false, false, false}), new Music(), new Light(), false, true),
-                    new Alarm("alarm alarm 002", LocalDateTime.now().plusMinutes(1).withSecond(0), "Desc", new Recurrence(RecurrenceType.EveryDay, new boolean[]{true, true, true, true, true, false, false}), new Music(), new Light(), false, true)//,
+                    new Alarm("alarm alarm 002", LocalDateTime.now().plusMinutes(1).withSecond(0), "Desc", new Recurrence(RecurrenceType.EveryDay, new boolean[]{true, true, true, true, true, true, true}), new Music(), new Light(), false, true)//,
 //                    new Alarm("alarm 003", LocalDateTime.now().plusMinutes(2).withSecond(0), "Desc", new Recurrence(RecurrenceType.EveryDay, new boolean[]{true, true, true, true, true, false, false}), new Music(), new Light(), false, false),
 //                    new Alarm("alarm 005", LocalDateTime.now().plusMinutes(3).withSecond(0), "Desc", new Recurrence(RecurrenceType.Once, new boolean[]{false, false, false, false, false, false, false}), new Music(), new Light(), false, true)
             )) {
