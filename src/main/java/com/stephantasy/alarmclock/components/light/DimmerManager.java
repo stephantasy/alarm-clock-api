@@ -4,6 +4,7 @@ import com.stephantasy.alarmclock.core.*;
 import org.hibernate.annotations.common.util.impl.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 public class DimmerManager implements Runnable {
 
@@ -17,21 +18,22 @@ public class DimmerManager implements Runnable {
     private final int brightnessMax;
     private final DomoticzYeelight domoticzYeelight;
     private final LightParams lightParams;
-
+    private boolean DEBUG;
     private boolean shouldStop;
 
-    public DimmerManager(DomoticzYeelight domoticzYeelight, LightParams lightParams, long duration) {
+    public DimmerManager(DomoticzYeelight domoticzYeelight, LightParams lightParams, long duration, boolean debug) {
         this.domoticzYeelight = domoticzYeelight;
         this.lightParams = lightParams;
         this.duration = duration > 0 ? duration : 1;    // Min 1 second
         this.mode = lightParams.getMode();
         this.brightnessMax = lightParams.getBrightness();
+        this.DEBUG = debug;
     }
 
     @Override
     public void run() {
 
-//        System.out.println("*** Increasing Volume Started with duration=" + duration + "***");
+        if(DEBUG) LOG.info("*** Increasing Brightness Started with duration=" + duration + "***");
 
         float step = (float) ((float)brightnessMax / duration * INTERVAL / 1000.0);
         float tempStep = step;
@@ -57,9 +59,9 @@ public class DimmerManager implements Runnable {
             tempStep += step;
             brightness = (int) tempStep;
 
-            System.out.println("brightness = " + brightness);
-//            System.out.println("tempStep = " + tempStep);
-//            System.out.println("step = " + step);
+            if(DEBUG) LOG.info("brightness = " + brightness);
+//            if(DEBUG) LOG.info("tempStep = " + tempStep);
+//            if(DEBUG) LOG.info("step = " + step);
 
             try {
                 Thread.sleep(INTERVAL);
@@ -67,7 +69,7 @@ public class DimmerManager implements Runnable {
                 // ignore
             }
         }
-//        System.out.println("*** Increasing Volume Completed ***");
+        if(DEBUG) LOG.info("*** Increasing Brightness Completed ***");
     }
 
     private void setValue(int brightness) {
@@ -76,7 +78,7 @@ public class DimmerManager implements Runnable {
             if(lightParams.isGradient()){
                 Color gradientColor = LightGradient.getColor(brightness, lightParams.getColorFrom(), lightParams.getColorTo());
                 lightParams.setColor(gradientColor);
-                System.out.println("gradientColor = " + gradientColor);
+                if(DEBUG) LOG.info("gradientColor = " + gradientColor);
             }
             domoticzYeelight.sendNewValues(lightParams);
         } catch (Exception e) {

@@ -9,6 +9,10 @@
 #  - specific Production properties
 # ===================================================================
 
+#Generic
+alarmclock:
+  debug: false
+
 # Port
 server:
   port: 8081

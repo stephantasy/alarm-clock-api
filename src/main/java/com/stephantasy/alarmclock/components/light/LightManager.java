@@ -10,6 +10,7 @@ import com.stephantasy.alarmclock.core.services.LightService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,8 @@ import java.util.List;
 public class LightManager implements LightService, ApplicationListener<AlarmEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(LightManager.class);
+    @Value("${alarmclock.debug}")
+    private boolean DEBUG;
 
     private Runnable t;
 
@@ -66,16 +69,15 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
 
 
         Light light = alarmEvent.getAlarm().getLight();
-        LOG.info("      => The light " + light.getName() + " is played");
+        if(DEBUG) LOG.info("      => The light " + light.getName() + " is played");
 
         // Run Dimmer with gradient
-        light.setDuration(15 * 60); // 15 minutes
         LightParams lightParams = new LightParams(new Color(0, 0, 0), new Color(128, 0, 0));
         lightParams.setBrightness(light.getMaxIntensity());
         lightParams.setMode(LightMode.WHITE);
 
         stopDimmer();
-        t = new DimmerManager(domoticzYeelight, lightParams, light.getDuration());
+        t = new DimmerManager(domoticzYeelight, lightParams, light.getDuration(), DEBUG);
         new Thread(t).start();
 
     }

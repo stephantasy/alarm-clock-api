@@ -10,6 +10,7 @@ import com.stephantasy.alarmclock.dto.AlarmDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,9 @@ import java.util.stream.Collectors;
 @Service
 public class MySqlAlarmService implements AlarmService, AlarmPublisher {
 
-    Logger logger = LoggerFactory.getLogger(MySqlAlarmService.class);
+    Logger LOG = LoggerFactory.getLogger(MySqlAlarmService.class);
+    @Value("${alarmclock.debug}")
+    private boolean DEBUG;
 
     private AlarmRepository alarmRepository;
 
@@ -87,7 +90,7 @@ public class MySqlAlarmService implements AlarmService, AlarmPublisher {
     @Scheduled(cron = "${alarmclock.scheduling}", zone = "Europe/Luxembourg")
     public void alarmScheduler() {
 
-        logger.info("Alarm Trigger : " + LocalDateTime.now().toString());
+        if(DEBUG) LOG.info("Alarm Trigger : " + LocalDateTime.now().toString());
 
         List<Alarm> alarms = alarmRepository.findAllByOrderByDateAsc();
         for (Alarm alarm : alarms) {
@@ -96,7 +99,7 @@ public class MySqlAlarmService implements AlarmService, AlarmPublisher {
                 // The alarm's Date and Time is (Now - 30s)
                 if (alarm.isActivated() && alarm.getDate().isAfter(LocalDateTime.now().minusSeconds(30)) && checkIfTriggerable(alarm)) {
 
-                    logger.info("   - Alarm " + alarm.getId() + " was triggered (" + alarm.getDate().toString() + ")");
+                    if(DEBUG) LOG.info("   - Alarm " + alarm.getId() + " was triggered (" + alarm.getDate().toString() + ")");
 
                     if(alarm.getRecurrence().getRecurrenceType() == RecurrenceType.Once) {
                         alarm.setActivated(false);
@@ -109,7 +112,7 @@ public class MySqlAlarmService implements AlarmService, AlarmPublisher {
                     alarm.setDate(alarm.getDate().plusDays(1));
                     alarmRepository.save(alarm);
 
-                    logger.info("   - Alarm " + alarm.getId() + " has been reset to : " + alarm.getDate().toString());
+                    if(DEBUG) LOG.info("   - Alarm " + alarm.getId() + " has been reset to : " + alarm.getDate().toString());
                 }
             }
         }

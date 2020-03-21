@@ -12,7 +12,7 @@ public class Music {
 
     public Music() {
         name = "default";
-        delayBeforeFullSound = 5; // In second
+        delayBeforeFullSound = 15 * 60; // In second
         itLoop = true;
         playNext = false;
     }

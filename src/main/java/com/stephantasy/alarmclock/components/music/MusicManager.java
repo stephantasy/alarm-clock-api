@@ -4,23 +4,28 @@ import com.stephantasy.alarmclock.core.events.AlarmEvent;
 import com.stephantasy.alarmclock.core.exceptions.CustomHttpException;
 import com.stephantasy.alarmclock.core.models.Music;
 import com.stephantasy.alarmclock.core.services.MusicService;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
 
 @Service
 public class MusicManager implements MusicService, ApplicationListener<AlarmEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MusicManager.class);
+    @Value("${alarmclock.debug}")
+    private boolean DEBUG;
 
     @Value("${alarmclock.music-folder}")
     private String musicFolder;
@@ -48,14 +53,14 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
             if (isPaused) {
                 ((MusicPlayer) t).start();
                 isPaused = false;
-                LOG.info(MUSIC_PLAYING);
+                if (DEBUG) LOG.info(MUSIC_PLAYING);
                 return MUSIC_PLAYING;
             } else {
                 stop();
             }
         }
 
-        t = new MusicPlayer(file, volumeDuration);
+        t = new MusicPlayer(file, volumeDuration, DEBUG);
         new Thread(t).start();
         return MUSIC_PLAYING;
     }
@@ -65,7 +70,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         if (t != null) {
             isPaused = true;
             ((MusicPlayer) t).pause();
-            LOG.info(MUSIC_PAUSED);
+            if (DEBUG) LOG.info(MUSIC_PAUSED);
             return MUSIC_PAUSED;
         } else {
             return MUSIC_NONE;
@@ -78,7 +83,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         if (t != null) {
             ((MusicPlayer) t).stop();
             t = null;
-            LOG.info(MUSIC_STOPPED);
+            if (DEBUG) LOG.info(MUSIC_STOPPED);
             return MUSIC_STOPPED;
         } else {
             return MUSIC_NONE;
@@ -86,21 +91,20 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     }
 
     @Override
-    public void onApplicationEvent(AlarmEvent alarmEvent) {
-
+    public void onApplicationEvent(@NotNull AlarmEvent alarmEvent) {
         // Play Music
         {
-            LOG.info("      => The music " + alarmEvent.getAlarm().getMusic().getName() + " is played");
+            if (DEBUG) LOG.info("      => The music " + alarmEvent.getAlarm().getMusic().getName() + " is played");
 
             this.volumeDuration = alarmEvent.getAlarm().getMusic().getDelayBeforeFullSound();
-
             try {
-                InputStream song = resourceLoader.getResource("classpath:" + musicFolder + defaultMusic).getInputStream();
+                InputStream song = new FileInputStream(musicFolder + defaultMusic);
                 play(song);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new CustomHttpException("Music " + defaultMusic + " not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
         }
     }
+
 }
 

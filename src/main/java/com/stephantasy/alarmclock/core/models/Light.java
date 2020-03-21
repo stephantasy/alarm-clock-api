@@ -14,7 +14,7 @@ public class Light {
         name = "default";
         maxIntensity = 100;
         color = "0";
-        duration = 20;
+        duration = 15 * 60;
     }
 
     public Light(String name, int maxIntensity, String color, int duration) {

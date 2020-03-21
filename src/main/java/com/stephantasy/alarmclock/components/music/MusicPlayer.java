@@ -18,11 +18,13 @@ public class MusicPlayer implements Runnable {
     private InputStream file;
     private VolumeManager volumeManager;
     private long volumeDuration;
+    private boolean DEBUG;
 
-    public MusicPlayer(InputStream file, long volumeDuration) {
+    public MusicPlayer(InputStream file, long volumeDuration, boolean debug) {
         this.file = file;
         this.callback = null;
         this.volumeDuration = volumeDuration;
+        this.DEBUG = debug;
     }
 
     public MusicPlayer(InputStream file, MusicCallback musicIsDone) {
@@ -97,7 +99,7 @@ public class MusicPlayer implements Runnable {
             start();
 
             // Volume Control
-            volumeManager = new VolumeManager(clip, volumeDuration);
+            volumeManager = new VolumeManager(clip, volumeDuration, DEBUG);
             volumeManager.start();
 
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e1) {

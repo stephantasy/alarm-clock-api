@@ -1,7 +1,10 @@
 package com.stephantasy.alarmclock.core;
 
+import com.stephantasy.alarmclock.components.light.LightManager;
 import com.stephantasy.alarmclock.core.exceptions.CustomHttpException;
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -27,6 +30,10 @@ import java.util.Random;
 
 @Component
 public class DomoticzYeelight {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DomoticzYeelight.class);
+    @Value("${alarmclock.debug}")
+    private boolean DEBUG;
 
     @Value("${alarmclock.url}")
     private String url;
@@ -68,7 +75,7 @@ public class DomoticzYeelight {
 //            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 //
 //            // Get response body
-//            System.out.println(response.body().string());
+//            if(DEBUG) LOG.info(response.body().string());
 //        }
 //
 //    }
@@ -96,7 +103,7 @@ public class DomoticzYeelight {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             // Get response body
             String jsonResponse = Objects.requireNonNull(response.body()).string();
-            System.out.println(jsonResponse);
+            if(DEBUG) LOG.info(jsonResponse);
             return jsonResponse;
         } catch (IOException e) {
             throw new CustomHttpException("Unable to control light!", HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -128,7 +135,7 @@ public class DomoticzYeelight {
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             // Get response body
             String jsonResponse = Objects.requireNonNull(response.body()).string();
-            System.out.println(jsonResponse);
+            if(DEBUG) LOG.info(jsonResponse);
             return jsonResponse;
         } catch (IOException e) {
             throw new CustomHttpException("Unable to control light!", HttpStatus.INTERNAL_SERVER_ERROR.value());
