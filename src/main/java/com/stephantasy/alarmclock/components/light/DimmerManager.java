@@ -1,8 +1,7 @@
 package com.stephantasy.alarmclock.components.light;
 
-import com.stephantasy.alarmclock.core.LightParams;
-import com.stephantasy.alarmclock.core.DomoticzYeelight;
-import com.stephantasy.alarmclock.core.LightMode;
+import com.stephantasy.alarmclock.core.*;
+import org.hibernate.annotations.common.util.impl.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +73,11 @@ public class DimmerManager implements Runnable {
     private void setValue(int brightness) {
         try {
             lightParams.setBrightness(brightness);
+            if(lightParams.isGradient()){
+                Color gradientColor = LightGradient.getColor(brightness, lightParams.getColorFrom(), lightParams.getColorTo());
+                lightParams.setColor(gradientColor);
+                System.out.println("gradientColor = " + gradientColor);
+            }
             domoticzYeelight.sendNewValues(lightParams);
         } catch (Exception e) {
             e.printStackTrace();

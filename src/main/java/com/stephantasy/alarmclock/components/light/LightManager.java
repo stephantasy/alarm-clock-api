@@ -1,5 +1,6 @@
 package com.stephantasy.alarmclock.components.light;
 
+import com.stephantasy.alarmclock.core.Color;
 import com.stephantasy.alarmclock.core.DomoticzYeelight;
 import com.stephantasy.alarmclock.core.LightMode;
 import com.stephantasy.alarmclock.core.LightParams;
@@ -67,14 +68,11 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         Light light = alarmEvent.getAlarm().getLight();
         LOG.info("      => The light " + light.getName() + " is played");
 
-        // Run Dimmer
-        light.setDuration(15*60); // 15 minutes
-        LightParams lightParams = new LightParams();
+        // Run Dimmer with gradient
+        light.setDuration(15 * 60); // 15 minutes
+        LightParams lightParams = new LightParams(new Color(0, 0, 0), new Color(128, 0, 0));
         lightParams.setBrightness(light.getMaxIntensity());
         lightParams.setMode(LightMode.WHITE);
-        lightParams.setColor1(128);
-        lightParams.setColor2(0);
-        lightParams.setColor3(0);
 
         stopDimmer();
         t = new DimmerManager(domoticzYeelight, lightParams, light.getDuration());
@@ -83,8 +81,8 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     }
 
 
-    private void stopDimmer(){
-        if(t != null) {
+    private void stopDimmer() {
+        if (t != null) {
             ((DimmerManager) t).stopIt();
             t = null;
         }
