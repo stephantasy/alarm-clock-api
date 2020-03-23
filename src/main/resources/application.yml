@@ -17,7 +17,6 @@ alarmclock:
   scheduling: "0 0/1 * * * ?"
   # Music folder
   music-folder: musics/
-  default-music: default.wav
   # Domoticz
 
 #

@@ -18,7 +18,11 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MusicManager implements MusicService, ApplicationListener<AlarmEvent> {
@@ -29,18 +33,18 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Value("${alarmclock.music-folder}")
     private String musicFolder;
-    @Value("${alarmclock.default-music}")
-    private String defaultMusic;
 
     private final static String MUSIC_PLAYING = "Music is Playing";
     private final static String MUSIC_PAUSED = "Music is Paused";
     private final static String MUSIC_STOPPED = "Music is Stopped";
     private static final String MUSIC_NONE = "No music is playing";
+
     @Autowired
     ResourceLoader resourceLoader;
     private boolean isPaused = false;
     private Runnable t;
     private long volumeDuration = 5; // in second
+    private Stream<Path> walk;
 
     @Override
     public List<Music> getMusics() {
@@ -96,15 +100,50 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         {
             if (DEBUG) LOG.info("      => The music " + alarmEvent.getAlarm().getMusic().getName() + " is played");
 
-            this.volumeDuration = alarmEvent.getAlarm().getMusic().getDelayBeforeFullSound();
             try {
-                InputStream song = new FileInputStream(musicFolder + defaultMusic);
+                // Set the volume duration
+                this.volumeDuration = alarmEvent.getAlarm().getMusic().getDelayBeforeFullSound();
+
+                // Get Music
+                InputStream song = getRandomSong();
+
                 play(song);
             } catch (Exception e) {
-                throw new CustomHttpException("Music " + defaultMusic + " not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
+                throw new CustomHttpException("Music not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
         }
     }
 
-}
+    @Override
+    public InputStream getRandomSong() {
+        String musicToPlay = "Undefined";
+        try {
+            // List of files int he Music folder
+            Stream<Path> walk = Files.walk(Paths.get(musicFolder));
+            List<String> musicList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
+            // Choose a random file
+            int fileNumber = (int) (Math.random() * musicList.size());
+            musicToPlay = musicList.get(fileNumber);
 
+            return new FileInputStream(musicToPlay);
+        } catch (FileNotFoundException e) {
+            throw new CustomHttpException("File " + musicToPlay + " not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } catch (IOException e) {
+            throw new CustomHttpException("Folder " + musicFolder + " not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        Stream<Path> walk = Files.walk(Paths.get("E:\\Documents and Settings\\BARTHELEMY.XPSP2-F7C8CF629\\Mes documents\\DEVELOPMENT\\Alarm Clock\\alarm-clock-api\\musics"));
+        List<String> musicList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
+
+        // Choose a random file
+        for (int i = 0 ; i < 20  ; i++) {
+            int fileNumber = (int) (Math.random() * musicList.size());
+            System.out.println("Nb = " + fileNumber);
+        }
+    }
+
+}

@@ -21,12 +21,6 @@ import java.io.InputStream;
 @CrossOrigin
 public class MusicController {
 
-    @Value("${alarmclock.music-folder}")
-    private String musicFolder;
-
-    @Value("${alarmclock.default-music}")
-    private String defaultMusic;
-
     private MusicService musicService;
 
     @Autowired
@@ -37,12 +31,8 @@ public class MusicController {
     @ApiOperation(value = "Play the ... music")
     @GetMapping("/start")
     public String startMusic() {
-        InputStream file = null;
-        try {
-            file = new ClassPathResource(musicFolder + defaultMusic).getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        InputStream file;
+        file = musicService.getRandomSong();
         return musicService.play(file);
     }
 
