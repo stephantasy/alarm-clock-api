@@ -53,4 +53,11 @@ public class LightController {
         lightService.dimById(id, value);
         return "TODO";
     }
+
+    @ApiOperation(value = "Is the Light On?")
+    @GetMapping("/state")
+    public ResponseEntity<Boolean> getMusicState() {
+        boolean isOn = lightService.getState();
+        return new ResponseEntity<>(isOn, HttpStatus.OK);
+    }
 }

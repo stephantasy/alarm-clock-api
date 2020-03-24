@@ -2,12 +2,11 @@ package com.stephantasy.alarmclock.components.music;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 
-public class VolumeManager extends Thread {
+public class VolumeManager implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(VolumeManager.class);
 

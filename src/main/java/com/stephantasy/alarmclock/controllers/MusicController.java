@@ -6,13 +6,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 @RestController
@@ -29,7 +26,7 @@ public class MusicController {
     }
 
     @ApiOperation(value = "Play the ... music")
-    @GetMapping("/start")
+    @PutMapping("/start")
     public String startMusic() {
         InputStream file;
         file = musicService.getRandomSong();
@@ -50,4 +47,12 @@ public class MusicController {
         String stop = musicService.stop();
         return new ResponseEntity<>(stop, HttpStatus.OK);
     }
+
+    @ApiOperation(value = "Is the Music On?")
+    @GetMapping("/state")
+    public ResponseEntity<Boolean> getMusicState() {
+        boolean isOn = musicService.getState();
+        return new ResponseEntity<>(isOn, HttpStatus.OK);
+    }
+
 }

@@ -1,9 +1,6 @@
 package com.stephantasy.alarmclock.components.light;
 
-import com.stephantasy.alarmclock.core.Color;
-import com.stephantasy.alarmclock.core.DomoticzYeelight;
-import com.stephantasy.alarmclock.core.LightMode;
-import com.stephantasy.alarmclock.core.LightParams;
+import com.stephantasy.alarmclock.core.*;
 import com.stephantasy.alarmclock.core.events.AlarmEvent;
 import com.stephantasy.alarmclock.core.models.Light;
 import com.stephantasy.alarmclock.core.services.LightService;
@@ -23,7 +20,8 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     @Value("${alarmclock.debug}")
     private boolean DEBUG;
 
-    private Runnable t;
+    private Runnable dimmer;
+    private Runnable timer;
 
     private DomoticzYeelight domoticzYeelight;
 
@@ -67,7 +65,6 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     @Override
     public void onApplicationEvent(AlarmEvent alarmEvent) {
 
-
         Light light = alarmEvent.getAlarm().getLight();
         if(DEBUG) LOG.info("      => The light " + light.getName() + " is played");
 
@@ -76,17 +73,34 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         lightParams.setBrightness(light.getMaxIntensity());
         lightParams.setMode(LightMode.WHITE);
 
+        // Run dimmer
         stopDimmer();
-        t = new DimmerManager(domoticzYeelight, lightParams, light.getDuration(), DEBUG);
-        new Thread(t).start();
+        dimmer = new DimmerManager(domoticzYeelight, lightParams, light.getDuration(), DEBUG);
+        new Thread(dimmer).start();
 
+        // Run Timer (to limit time of running)
+        stopTimer();
+        timer = new Timer(3600, this::turnOffAll, DEBUG);
+        new Thread(timer).start();
     }
 
+    @Override
+    public boolean getState() {
+        return (dimmer != null);
+    }
 
     private void stopDimmer() {
-        if (t != null) {
-            ((DimmerManager) t).stopIt();
-            t = null;
+        if (dimmer != null) {
+            ((DimmerManager) dimmer).stopIt();
+            dimmer = null;
         }
+    }
+
+    private void stopTimer() {
+        if (timer != null) {
+            ((Timer) timer).stopIt();
+            timer = null;
+        }
+
     }
 }

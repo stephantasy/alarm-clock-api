@@ -1,5 +1,6 @@
 package com.stephantasy.alarmclock.components.music;
 
+import com.stephantasy.alarmclock.core.Timer;
 import com.stephantasy.alarmclock.core.events.AlarmEvent;
 import com.stephantasy.alarmclock.core.exceptions.CustomHttpException;
 import com.stephantasy.alarmclock.core.models.Music;
@@ -10,13 +11,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.net.URL;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,7 +44,8 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     @Autowired
     ResourceLoader resourceLoader;
     private boolean isPaused = false;
-    private Runnable t;
+    private Runnable player;
+    private Runnable timer;
     private long volumeDuration = 5; // in second
     private Stream<Path> walk;
 
@@ -53,9 +56,9 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Override
     public String play(InputStream file) {
-        if (t != null) {
+        if (player != null) {
             if (isPaused) {
-                ((MusicPlayer) t).start();
+                ((MusicPlayer) player).start();
                 isPaused = false;
                 if (DEBUG) LOG.info(MUSIC_PLAYING);
                 return MUSIC_PLAYING;
@@ -64,16 +67,16 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
             }
         }
 
-        t = new MusicPlayer(file, volumeDuration, DEBUG);
-        new Thread(t).start();
+        player = new MusicPlayer(file, volumeDuration, DEBUG);
+        new Thread(player).start();
         return MUSIC_PLAYING;
     }
 
     @Override
     public String pause() {
-        if (t != null) {
+        if (player != null) {
             isPaused = true;
-            ((MusicPlayer) t).pause();
+            ((MusicPlayer) player).pause();
             if (DEBUG) LOG.info(MUSIC_PAUSED);
             return MUSIC_PAUSED;
         } else {
@@ -84,9 +87,9 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Override
     public String stop() {
-        if (t != null) {
-            ((MusicPlayer) t).stop();
-            t = null;
+        if (player != null) {
+            ((MusicPlayer) player).stop();
+            player = null;
             if (DEBUG) LOG.info(MUSIC_STOPPED);
             return MUSIC_STOPPED;
         } else {
@@ -108,6 +111,12 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
                 InputStream song = getRandomSong();
 
                 play(song);
+
+                // Run Timer (to limit time of running)
+                stopTimer();
+                timer = new Timer(3600, this::stop, DEBUG);
+                new Thread(timer).start();
+
             } catch (Exception e) {
                 throw new CustomHttpException("Music not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
@@ -134,15 +143,15 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     }
 
-    public static void main(String[] args) throws IOException {
+    @Override
+    public boolean getState() {
+        return (player != null);
+    }
 
-        Stream<Path> walk = Files.walk(Paths.get("E:\\Documents and Settings\\BARTHELEMY.XPSP2-F7C8CF629\\Mes documents\\DEVELOPMENT\\Alarm Clock\\alarm-clock-api\\musics"));
-        List<String> musicList = walk.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
-
-        // Choose a random file
-        for (int i = 0 ; i < 20  ; i++) {
-            int fileNumber = (int) (Math.random() * musicList.size());
-            System.out.println("Nb = " + fileNumber);
+    private void stopTimer() {
+        if (timer != null) {
+            ((Timer) timer).stopIt();
+            timer = null;
         }
     }
 

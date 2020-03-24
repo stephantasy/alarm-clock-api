@@ -83,16 +83,12 @@ public class MusicPlayer implements Runnable {
                         callback.musicIsFinished();
                     }
                     // Stop the Volume Manager (if it is not finished)
-                    try {
-                        volumeManager.stopIt();
-                        volumeManager.join();
-                    } catch (InterruptedException ex) {
-                        // Ignore
-                    }
+                    volumeManager.stopIt();
                 }
             });
             clip.open(audioIn);
 
+            // Set Volume to minimum
             FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
             control.setValue(control.getMinimum());
 
@@ -100,7 +96,7 @@ public class MusicPlayer implements Runnable {
 
             // Volume Control
             volumeManager = new VolumeManager(clip, volumeDuration, DEBUG);
-            volumeManager.start();
+            new Thread(volumeManager).start();
 
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e1) {
             e1.printStackTrace();

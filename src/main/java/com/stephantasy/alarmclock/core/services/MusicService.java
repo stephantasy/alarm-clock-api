@@ -11,4 +11,5 @@ public interface MusicService {
     String pause();
     String stop();
     InputStream getRandomSong();
+    boolean getState();
 }
