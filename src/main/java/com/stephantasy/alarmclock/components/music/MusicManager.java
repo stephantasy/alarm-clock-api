@@ -82,19 +82,22 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         } else {
             return MUSIC_NONE;
         }
-
     }
 
     @Override
     public String stop() {
+        String result;
         if (player != null) {
             ((MusicPlayer) player).stop();
             player = null;
             if (DEBUG) LOG.info(MUSIC_STOPPED);
-            return MUSIC_STOPPED;
+            result = MUSIC_STOPPED;
         } else {
-            return MUSIC_NONE;
+            result = MUSIC_NONE;
         }
+        // Stop Timer
+        stopTimer();
+        return result;
     }
 
     @Override
@@ -114,7 +117,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
                 // Run Timer (to limit time of running)
                 stopTimer();
-                timer = new Timer(3600, this::stop, DEBUG);
+                timer = new Timer("Music", 3600, this::stop, DEBUG);
                 new Thread(timer).start();
 
             } catch (Exception e) {

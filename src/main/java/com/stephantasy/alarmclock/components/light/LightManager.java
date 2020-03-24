@@ -44,6 +44,8 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     @Override
     public String turnOffAll() {
         stopDimmer();
+        // Stop Timer
+        stopTimer();
         return domoticzYeelight.sendStop();
     }
 
@@ -80,7 +82,7 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
 
         // Run Timer (to limit time of running)
         stopTimer();
-        timer = new Timer(3600, this::turnOffAll, DEBUG);
+        timer = new Timer("Light", 3600, this::turnOffAll, DEBUG);
         new Thread(timer).start();
     }
 

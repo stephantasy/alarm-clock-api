@@ -13,22 +13,24 @@ public class Timer implements Runnable {
     private final long duration;    // In second
     private boolean DEBUG;
     private boolean shouldStop;
+    private String name;
 
-    public Timer(long duration, TimerCallback callback, boolean DEBUG) {
+    public Timer(String name, long duration, TimerCallback callback, boolean DEBUG) {
         this.duration = duration;
         this.callback = callback;
         this.DEBUG = DEBUG;
+        this.name = name;
     }
 
     @Override
     public void run() {
-        if(DEBUG) LOG.info("*** Timer Started with duration=" + duration + " ***");
+        if (DEBUG) LOG.info("*** Timer -" + name + "- Started with duration=" + duration + " ***");
         long start = System.currentTimeMillis();
         while (!shouldStop) {
             long finish = System.currentTimeMillis();
             long timeElapsed = finish - start;
-            if(timeElapsed >= duration*1000){
-                if(DEBUG) LOG.info("*** Timer Elapsed after " + timeElapsed/1000 + " seconds ***");
+            if (timeElapsed >= duration * 1000) {
+                if (DEBUG) LOG.info("*** Timer -" + name + "- Elapsed after " + timeElapsed / 1000 + " seconds ***");
                 break;
             }
             try {
@@ -38,7 +40,7 @@ public class Timer implements Runnable {
             }
         }
         callback.timeout();
-        if(DEBUG) LOG.info("*** Time Out! ***");
+        if (DEBUG) LOG.info("*** Time Out! (" + name + ") ***");
     }
 
     public void stopIt() {
