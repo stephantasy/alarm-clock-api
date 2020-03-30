@@ -49,4 +49,11 @@ public class AlarmController {
         return alarmService.addAlarm(alarm);
     }
 
+
+    @ApiOperation(value = "Postpone the Alarm")
+    @PutMapping("/alarm/{id}/postpone")
+    public AlarmDto postponeAlarm(@RequestBody AlarmDto alarm) {
+        return alarmService.postponeAlarm(alarm);
+    }
+
 }

@@ -41,7 +41,7 @@ public class MusicController {
 
     @ApiOperation(value = "Stop the played music", nickname = "stopMusic", notes = "Stop the playing music", response = String.class, tags = {"stopMusic", "stop", "music"})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Audit trail file under PDF format", response = String.class)})
+            @ApiResponse(code = 200, message = "Stop the played music", response = String.class)})
     @PutMapping(value = "/stop", produces = {"application/json"})
     public ResponseEntity<String> stopMusic() {
         String stop = musicService.stop();
@@ -53,6 +53,15 @@ public class MusicController {
     public ResponseEntity<Boolean> getMusicState() {
         boolean isOn = musicService.getState();
         return new ResponseEntity<>(isOn, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Postpone the played music", nickname = "postponeMusic", notes = "Postpone the playing music", response = String.class, tags = {"postponeMusic", "postpone", "music"})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Postpone the played music", response = String.class)})
+    @PutMapping(value = "/stop", produces = {"application/json"})
+    public ResponseEntity<String> postponeMusic() {
+        String stop = musicService.postpone();
+        return new ResponseEntity<>(stop, HttpStatus.OK);
     }
 
 }

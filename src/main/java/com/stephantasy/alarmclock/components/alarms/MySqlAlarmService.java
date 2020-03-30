@@ -118,6 +118,12 @@ public class MySqlAlarmService implements AlarmService, AlarmPublisher {
         }
     }
 
+    @Override
+    public AlarmDto postponeAlarm(AlarmDto alarm) {
+        // TODO
+        return null;
+    }
+
     private boolean checkIfTriggerable(Alarm alarm) {
 
         boolean okToBeTriggered;

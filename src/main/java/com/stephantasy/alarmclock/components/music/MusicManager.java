@@ -151,6 +151,12 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         return (player != null);
     }
 
+    @Override
+    public String postpone() {
+        //TODO
+        return null;
+    }
+
     private void stopTimer() {
         if (timer != null) {
             ((Timer) timer).stopIt();

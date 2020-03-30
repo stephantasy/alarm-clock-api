@@ -12,4 +12,5 @@ public interface LightService {
     String turnOffById(String id);
     String dimById(String id, String value);
     boolean getState();
+    String postpone();
 }

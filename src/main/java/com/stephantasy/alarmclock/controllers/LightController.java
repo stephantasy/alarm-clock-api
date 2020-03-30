@@ -60,4 +60,10 @@ public class LightController {
         boolean isOn = lightService.getState();
         return new ResponseEntity<>(isOn, HttpStatus.OK);
     }
+
+    @ApiOperation(value = "Postpone the current Light")
+    @PutMapping("/light/postpone")
+    public ResponseEntity<String> postponeLight() {
+        return new ResponseEntity<>(lightService.postpone(), HttpStatus.OK);
+    }
 }

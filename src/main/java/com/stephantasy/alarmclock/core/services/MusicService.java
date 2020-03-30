@@ -12,4 +12,5 @@ public interface MusicService {
     String stop();
     InputStream getRandomSong();
     boolean getState();
+    String postpone();
 }

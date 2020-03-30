@@ -91,6 +91,12 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         return (dimmer != null);
     }
 
+    @Override
+    public String postpone() {
+        // TODO
+        return null;
+    }
+
     private void stopDimmer() {
         if (dimmer != null) {
             ((DimmerManager) dimmer).stopIt();

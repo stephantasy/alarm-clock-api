@@ -17,4 +17,6 @@ public interface AlarmService {
     void deleteAlarm(long id);
 
     void alarmScheduler();
+
+    AlarmDto postponeAlarm(AlarmDto alarm);
 }
