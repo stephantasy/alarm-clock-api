@@ -3,8 +3,10 @@ package com.stephantasy.alarmclock.components.music;
 import com.stephantasy.alarmclock.core.Timer;
 import com.stephantasy.alarmclock.core.events.AlarmEvent;
 import com.stephantasy.alarmclock.core.exceptions.CustomHttpException;
+import com.stephantasy.alarmclock.core.exceptions.FetchAlarmException;
 import com.stephantasy.alarmclock.core.models.Music;
 import com.stephantasy.alarmclock.core.services.MusicService;
+import com.stephantasy.alarmclock.dto.MusicDto;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +35,8 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private static final Logger LOG = LoggerFactory.getLogger(MusicManager.class);
     @Value("${alarmclock.debug}")
     private boolean DEBUG;
+
+    private MusicRepository musicRepository;
 
     @Value("${alarmclock.music-folder}")
     private String musicFolder;
@@ -49,9 +54,26 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private long volumeDuration = 5; // in second
     private Stream<Path> walk;
 
+    @Autowired
+    private MusicManager(MusicRepository musicRepository){
+        this.musicRepository = musicRepository;
+    }
+
     @Override
-    public List<Music> getMusics() {
-        return null;
+    public MusicDto getMusic(long id) {
+        Optional<Music> music = musicRepository.findById(id);
+        if (music.isPresent()) {
+            return music.get().toDto();
+        }
+        throw new FetchAlarmException("Music not found with id: " + id);
+    }
+
+    @Override
+    public List<MusicDto> getMusics() {
+        return musicRepository.findAll()
+                .stream()
+                .map(Music::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -104,11 +126,18 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     public void onApplicationEvent(@NotNull AlarmEvent alarmEvent) {
         // Play Music
         {
-            if (DEBUG) LOG.info("      => The music " + alarmEvent.getAlarm().getMusic().getName() + " is played");
+            long id = alarmEvent.getAlarm().getMusicID();
+            Optional<Music> optMusic = musicRepository.findById(id);
+            if (!optMusic.isPresent()) {
+                throw new FetchAlarmException("Light not found with id: " + id);
+            }
+            Music music = optMusic.get();
+
+            if (DEBUG) LOG.info("      => The music " + music.getName() + " is played");
 
             try {
                 // Set the volume duration
-                this.volumeDuration = alarmEvent.getAlarm().getMusic().getDelayBeforeFullSound();
+                this.volumeDuration = music.getDelayBeforeFullSound();
 
                 // Get Music
                 InputStream song = getRandomSong();

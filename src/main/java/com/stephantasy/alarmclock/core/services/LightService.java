@@ -1,11 +1,12 @@
 package com.stephantasy.alarmclock.core.services;
 
-import com.stephantasy.alarmclock.core.models.Light;
+import com.stephantasy.alarmclock.dto.LightDto;
 
 import java.util.List;
 
 public interface LightService {
-    List<Light> getLights();
+    LightDto getLight(long id);
+    List<LightDto> getLights();
     String turnOnAll();
     String turnOffAll();
     String turnOnById(String id);

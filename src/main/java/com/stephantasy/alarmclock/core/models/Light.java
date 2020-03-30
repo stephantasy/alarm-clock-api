@@ -1,9 +1,18 @@
 package com.stephantasy.alarmclock.core.models;
 
-import javax.persistence.Embeddable;
+import com.stephantasy.alarmclock.dto.LightDto;
 
-@Embeddable
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Light {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     private String name;
     private int maxIntensity;
@@ -14,7 +23,7 @@ public class Light {
         name = "default";
         maxIntensity = 100;
         color = "0";
-        duration = 15 * 60;
+        duration = 15 * 60; // In minute
     }
 
     public Light(String name, int maxIntensity, String color, int duration) {
@@ -22,6 +31,16 @@ public class Light {
         this.maxIntensity = maxIntensity;
         this.color = color;
         this.duration = duration;
+    }
+
+    public LightDto toDto() {
+        return new LightDto(
+                id,
+                name,
+                maxIntensity,
+                color,
+                duration
+        );
     }
 
     public String getName() {

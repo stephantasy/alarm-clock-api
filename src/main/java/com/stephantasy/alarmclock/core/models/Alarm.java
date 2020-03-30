@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Alarm {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private String name;
@@ -25,30 +25,18 @@ public class Alarm {
     @Embedded
     private Recurrence recurrence;
 
-    @Column
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "name", column = @Column(name = "music_name"))
-    })
-    private Music music;
-
-    @Column
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "name", column = @Column(name = "light_name"))
-    })
-    private Light light;
-
+    private long musicID;
+    private long lightID;
     private boolean deleteAfterDone;
     private boolean activated;
 
-    public Alarm(String name, LocalDateTime date, String description, Recurrence recurrence, Music music, Light light, boolean deleteAfterDone, boolean activated) {
+    public Alarm(String name, LocalDateTime date, String description, Recurrence recurrence, long musicID, long lightID, boolean deleteAfterDone, boolean activated) {
         this.name = name;
         this.date = date;
         this.description = description;
         this.recurrence = recurrence;
-        this.music = music;
-        this.light = light;
+        this.musicID = musicID;
+        this.lightID = lightID;
         this.deleteAfterDone = deleteAfterDone;
         this.activated = activated;
     }
@@ -62,8 +50,8 @@ public class Alarm {
         this.date = alarmDto.getDate();
         this.description = alarmDto.getDescription();
         this.recurrence = alarmDto.getRecurrence();
-        this.music = alarmDto.getMusic() == null ? new Music() : alarmDto.getMusic();
-        this.light = alarmDto.getLight() == null ? new Light() : alarmDto.getLight();
+        this.musicID = alarmDto.getMusicID();
+        this.lightID = alarmDto.getLightID();
         this.deleteAfterDone = alarmDto.isDeleteAfterDone();
         this.activated = alarmDto.isActivated();
     }
@@ -75,8 +63,8 @@ public class Alarm {
                 date,
                 description,
                 recurrence,
-                music,
-                light,
+                musicID,
+                lightID,
                 deleteAfterDone,
                 activated
         );
@@ -122,20 +110,20 @@ public class Alarm {
         this.recurrence = recurrence;
     }
 
-    public Music getMusic() {
-        return music;
+    public long getMusicID() {
+        return musicID;
     }
 
-    public void setMusic(Music music) {
-        this.music = music;
+    public void setMusicID(long musicID) {
+        this.musicID = musicID;
     }
 
-    public Light getLight() {
-        return light;
+    public long getLightID() {
+        return lightID;
     }
 
-    public void setLight(Light light) {
-        this.light = light;
+    public void setLightID(long lightID) {
+        this.lightID = lightID;
     }
 
     public boolean isDeleteAfterDone() {

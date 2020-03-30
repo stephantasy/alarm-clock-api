@@ -1,9 +1,18 @@
 package com.stephantasy.alarmclock.core.models;
 
-import javax.persistence.Embeddable;
+import com.stephantasy.alarmclock.dto.MusicDto;
 
-@Embeddable
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Music {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     private String name;
     private long delayBeforeFullSound;
@@ -22,6 +31,16 @@ public class Music {
         this.delayBeforeFullSound = delayBeforeFullSound;
         this.itLoop = itLoop;
         this.playNext = playNext;
+    }
+
+    public MusicDto toDto() {
+        return new MusicDto(
+                id,
+                name,
+                delayBeforeFullSound,
+                itLoop,
+                playNext
+        );
     }
 
     public void setName(String name) {

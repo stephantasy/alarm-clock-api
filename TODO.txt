@@ -1,0 +1,4 @@
+[] - Implement delete alarm endpoint
+
+[] - Add version endpoint
+[] - Add security (API Key)
