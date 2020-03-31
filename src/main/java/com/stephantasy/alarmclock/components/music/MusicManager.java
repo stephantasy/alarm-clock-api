@@ -124,6 +124,8 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Override
     public void onApplicationEvent(@NotNull AlarmEvent alarmEvent) {
+        if(true){return;}
+
         // Play Music
         {
             long id = alarmEvent.getAlarm().getMusicID();
