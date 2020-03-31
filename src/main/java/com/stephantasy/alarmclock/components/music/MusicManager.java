@@ -51,6 +51,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private boolean isPaused = false;
     private Runnable player;
     private Runnable timer;
+    private Thread timerThread;
     private long volumeDuration = 5; // in second
     private Stream<Path> walk;
 
@@ -124,10 +125,9 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Override
     public void onApplicationEvent(@NotNull AlarmEvent alarmEvent) {
-        if(true){return;}
-
         // Play Music
         {
+            // Get the Music in DB
             long id = alarmEvent.getAlarm().getMusicID();
             Optional<Music> optMusic = musicRepository.findById(id);
             if (!optMusic.isPresent()) {
@@ -149,7 +149,8 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
                 // Run Timer (to limit time of running)
                 stopTimer();
                 timer = new Timer("Music", 3600, this::stop, DEBUG);
-                new Thread(timer).start();
+                timerThread = new Thread(timer, "Music Timer");
+                timerThread.start();
 
             } catch (Exception e) {
                 throw new CustomHttpException("Music not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -191,7 +192,12 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private void stopTimer() {
         if (timer != null) {
             ((Timer) timer).stopIt();
-            timer = null;
+            try {
+                timer = null;
+                timerThread.join();
+            } catch (InterruptedException e) {
+                LOG.error(e.getMessage());
+            }
         }
     }
 

@@ -3,7 +3,6 @@ package com.stephantasy.alarmclock.components.light;
 import com.stephantasy.alarmclock.core.*;
 import com.stephantasy.alarmclock.core.events.AlarmEvent;
 import com.stephantasy.alarmclock.core.exceptions.FetchAlarmException;
-import com.stephantasy.alarmclock.core.models.Alarm;
 import com.stephantasy.alarmclock.core.models.Light;
 import com.stephantasy.alarmclock.core.services.LightService;
 import com.stephantasy.alarmclock.dto.LightDto;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +29,7 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
 
     private Runnable dimmer;
     private Runnable timer;
+    private Thread dimmerThread, timerThread;
 
 
     @Autowired
@@ -86,7 +84,6 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         return "dimById";
     }
 
-    Thread t1, t2;
 
     @Override
     public void onApplicationEvent(AlarmEvent alarmEvent) {
@@ -105,28 +102,18 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         lightParams.setBrightness(light.getMaxIntensity());
         lightParams.setMode(LightMode.WHITE);
 
-
-        //Runnable runnable = new MonTraitement();
-        //Thread t = new Thread(runnable);
-
-
         stopDimmer();
         stopTimer();
 
-        //ThreadGroup monThreadGroup = new ThreadGroup("Mon groupe de threads");
-
         // Run dimmer (to start the light gently)
         dimmer = new DimmerManager(domoticzYeelight, lightParams, light.getDuration(), DEBUG);
-        //new Thread(dimmer).start();
         // Run Timer (to limit time of running)
         timer = new Timer("Light", 3600, this::turnOffAll, DEBUG);
-        //new Thread(timer).start();
 
-        t1 = new Thread(dimmer, "Dimmer");
-        t2 = new Thread(timer, "Timer");
-
-        t1.start();
-        t2.start();
+        dimmerThread = new Thread(dimmer, "Light Dimmer");
+        timerThread = new Thread(timer, "Light Timer");
+        dimmerThread.start();
+        timerThread.start();
     }
 
 
@@ -146,7 +133,8 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         if (dimmer != null) {
             ((DimmerManager) dimmer).stopIt();
             try {
-                t1.join();
+                dimmer = null;
+                dimmerThread.join();
             } catch (InterruptedException e) {
                 LOG.error(e.getMessage());
             }
@@ -158,11 +146,11 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         if (timer != null) {
             ((Timer) timer).stopIt();
             try {
-                t2.join();
+                timer = null;
+                timerThread.join();
             } catch (InterruptedException e) {
                 LOG.error(e.getMessage());
             }
-            //timer = null;
         }
     }
 

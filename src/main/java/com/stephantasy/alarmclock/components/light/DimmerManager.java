@@ -1,10 +1,8 @@
 package com.stephantasy.alarmclock.components.light;
 
 import com.stephantasy.alarmclock.core.*;
-import org.hibernate.annotations.common.util.impl.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 public class DimmerManager implements Runnable {
 
@@ -33,7 +31,7 @@ public class DimmerManager implements Runnable {
     @Override
     public void run() {
 
-        if(DEBUG) LOG.info("*** Increasing Brightness Started with duration=" + duration + "***");
+        if(DEBUG) LOG.info("*** Increasing Brightness Started with duration=" + duration + " ***");
 
         float step = (float) ((float)brightnessMax / duration * INTERVAL / 1000.0);
         float tempStep = step;

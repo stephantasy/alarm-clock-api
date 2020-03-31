@@ -26,7 +26,7 @@ public class VolumeManager implements Runnable {
     @Override
     public void run() {
 
-        if(DEBUG) LOG.info("*** Increasing Volume Started with duration=" + duration + "***");
+        if(DEBUG) LOG.info("*** Increasing Volume Started with duration=" + duration + " ***");
 
         double gain = STEP; // number between 0 and 1 (loudest)
         long interval = (long) (duration * 1000 * STEP);
