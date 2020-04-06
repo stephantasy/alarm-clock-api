@@ -1,6 +1,7 @@
 package com.stephantasy.alarmclock.core;
 
-import com.stephantasy.alarmclock.components.light.LightManager;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stephantasy.alarmclock.core.exceptions.CustomHttpException;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -8,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Random;
 
 /**
  * NOTES:
@@ -62,23 +63,6 @@ public class DomoticzYeelight {
         }
     }
 
-//    public void sendGet() throws Exception {
-//
-//        Request request = new Request.Builder()
-//                .url("https://www.google.com/search?q=mkyong")
-//                .addHeader("custom-key", "mkyong")  // add request headers
-//                .addHeader("User-Agent", "OkHttp Bot")
-//                .build();
-//
-//        try (Response response = httpClient.newCall(request).execute()) {
-//
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//
-//            // Get response body
-//            if(DEBUG) LOG.info(response.body().string());
-//        }
-//
-//    }
 
     //http://192.168.1.44:8080/json.htm?type=command&param=switchlight&idx=120&switchcmd=Off
 
@@ -175,5 +159,50 @@ public class DomoticzYeelight {
                 .append("}");
 
         return value.toString();
+    }
+
+    public boolean isLightOn() {
+        HttpUrl httpUrl = new HttpUrl.Builder()
+                .scheme("http")
+                .host(url)
+                .port(port)
+                .addPathSegment("json.htm")
+                .addQueryParameter("type", "devices")
+                .addQueryParameter("rid", idx)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(httpUrl)
+                .addHeader("Authorization", Credentials.basic(username, password))
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            // Get response body
+            String jsonResponse = Objects.requireNonNull(response.body()).string();
+            if(DEBUG) LOG.info(jsonResponse);
+            return getLightIsOn(jsonResponse);
+        } catch (IOException e) {
+            throw new CustomHttpException("Unable to control light!", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
+    private boolean getLightIsOn(String json) {
+        JsonNode data = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(json);
+            JsonNode jsonArray = node.get("result");
+            //Iterating the contents of the array
+            for (JsonNode jsonNode : jsonArray) {
+                data = jsonNode.get("Data");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (data != null){
+            return !data.toString().toUpperCase().replace("\"", "").equals("OFF");
+        }
+        return true;
     }
 }

@@ -154,39 +154,6 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         }
     }
 
-//    static void popo(){
-//        stopDimmer();
-//        stopTimer();
-//
-//        // Run dimmer (to start the light gently)
-//        LightParams lightParams = new LightParams(new Color(0, 0, 0), new Color(128, 0, 0));
-//        dimmer = new DimmerManager(domoticzYeelight, lightParams, 3, DEBUG);
-//        //new Thread(dimmer).start();
-//        // Run Timer (to limit time of running)
-//        timer = new Timer("Light", 3600, this::turnOffAll, DEBUG);
-//        //new Thread(timer).start();
-//
-//        t1 = new Thread(dimmer, "Dimmer");
-//        t2 = new Thread(timer, "Timer");
-//
-//        t1.start();
-//        t2.start();
-//    }
-//    public static void main(String[] args) {
-//
-//        Alarm alarm = new Alarm("alarm alarm 002", LocalDateTime.now().plusMinutes(1).withSecond(0), "Desc", new Recurrence(RecurrenceType.EveryDay, new boolean[]{true, true, true, true, true, true, true}), 1, 1, false, true)//,
-//        AlarmEvent event = new AlarmEvent(null, alarm);
-//
-//        popo(event);
-//
-//        try {
-//            Thread.sleep(3000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        popo(event);
-//    }
 }
 
 
