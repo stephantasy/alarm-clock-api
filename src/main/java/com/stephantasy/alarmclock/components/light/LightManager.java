@@ -64,9 +64,8 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     @Override
     public String turnOffAll() {
         stopDimmer();
-        // Stop Timer
         stopTimer();
-        return domoticzYeelight.sendStop();
+        return turnLightOff();
     }
 
     @Override
@@ -154,6 +153,20 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         }
     }
 
+    private String turnLightOff() {
+        String lightIsOff = "Unable to turn Light Off!";
+        int nbTry = 0, maxTry = 3;
+        while(domoticzYeelight.isLightOn()){
+            try {
+                Thread.sleep(1000);
+                lightIsOff = domoticzYeelight.sendStop();
+                if(nbTry++ >= maxTry) break;
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+        return lightIsOff;
+    }
 }
 
 

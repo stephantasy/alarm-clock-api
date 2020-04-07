@@ -66,16 +66,6 @@ public class DimmerManager implements Runnable {
                 // ignore
             }
         }
-
-        while(domoticzYeelight.isLightOn()){
-            try {
-                Thread.sleep(INTERVAL);
-                domoticzYeelight.sendStop();
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
-
         if(DEBUG) LOG.info("*** Increasing Brightness Completed ***");
     }
 
@@ -95,6 +85,6 @@ public class DimmerManager implements Runnable {
 
     public void stopIt() {
         this.shouldStop = true;
-        domoticzYeelight.sendStop();
+        setValue(0);
     }
 }
