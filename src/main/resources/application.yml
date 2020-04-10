@@ -15,6 +15,8 @@
 alarmclock:
   debug: true
   scheduling: "0 0/1 * * * ?"
+  # Time before an alarm stop in second
+  max-duration: 120
   # Music folder
   music-folder: musics/
   # Domoticz

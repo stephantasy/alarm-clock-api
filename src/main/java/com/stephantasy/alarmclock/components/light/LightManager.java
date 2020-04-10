@@ -24,6 +24,9 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
     @Value("${alarmclock.debug}")
     private boolean DEBUG;
 
+    @Value("${alarmclock.max-duration}")
+    private String maxDuration;
+
     private LightRepository lightRepository;
     private DomoticzYeelight domoticzYeelight;
 
@@ -63,8 +66,7 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
 
     @Override
     public String turnOffAll() {
-        stopDimmer();
-        stopTimer();
+        destroyDimmer();
         return turnLightOff();
     }
 
@@ -101,13 +103,13 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         lightParams.setBrightness(light.getMaxIntensity());
         lightParams.setMode(LightMode.WHITE);
 
-        stopDimmer();
-        stopTimer();
+        destroyDimmer();
+        destroyTimer();
 
         // Run dimmer (to start the light gently)
         dimmer = new DimmerManager(domoticzYeelight, lightParams, light.getDuration(), DEBUG);
         // Run Timer (to limit time of running)
-        timer = new Timer("Light", 3600, this::turnOffAll, DEBUG);
+        timer = new Timer("Light", Long.parseLong(maxDuration), this::turnOffAll, DEBUG);
 
         dimmerThread = new Thread(dimmer, "Light Dimmer");
         timerThread = new Thread(timer, "Light Timer");
@@ -128,7 +130,11 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         return null;
     }
 
-    private void stopDimmer() {
+    private String turnLightOff() {
+        return domoticzYeelight.sendStop();
+    }
+
+    private void destroyDimmer() {
         if (dimmer != null) {
             ((DimmerManager) dimmer).stopIt();
             try {
@@ -137,11 +143,16 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
             } catch (InterruptedException e) {
                 LOG.error(e.getMessage());
             }
-            //dimmer = null;
         }
     }
 
     private void stopTimer() {
+        if (timer != null) {
+            ((Timer) timer).stopIt();
+        }
+    }
+    // WARNING: A thread cannot kill itself by using a callback function call!
+    private void destroyTimer() {
         if (timer != null) {
             ((Timer) timer).stopIt();
             try {
@@ -153,20 +164,9 @@ public class LightManager implements LightService, ApplicationListener<AlarmEven
         }
     }
 
-    private String turnLightOff() {
-        String lightIsOff = "Unable to turn Light Off!";
-        int nbTry = 0, maxTry = 3;
-        while(domoticzYeelight.isLightOn()){
-            try {
-                Thread.sleep(1000);
-                lightIsOff = domoticzYeelight.sendStop();
-                if(nbTry++ >= maxTry) break;
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
-        return lightIsOff;
-    }
+
+
 }
+
 
 

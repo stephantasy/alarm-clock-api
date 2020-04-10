@@ -12,6 +12,7 @@
 #Generic
 alarmclock:
   debug: false
+  max-duration: 3600
 
 # Port
 server:

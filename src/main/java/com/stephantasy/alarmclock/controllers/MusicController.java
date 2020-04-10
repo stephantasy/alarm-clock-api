@@ -76,8 +76,8 @@ public class MusicController {
     })
     @PutMapping(value = "/postpone", produces = {"application/json"})
     public ResponseEntity<String> postponeMusic() {
-        String stop = musicService.postpone();
-        return new ResponseEntity<>(stop, HttpStatus.OK);
+        String postpone = musicService.postpone();
+        return new ResponseEntity<>(postpone, HttpStatus.OK);
     }
 
 }

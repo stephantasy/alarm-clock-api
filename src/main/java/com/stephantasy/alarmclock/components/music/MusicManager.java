@@ -36,10 +36,13 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     @Value("${alarmclock.debug}")
     private boolean DEBUG;
 
-    private MusicRepository musicRepository;
-
     @Value("${alarmclock.music-folder}")
     private String musicFolder;
+
+    @Value("${alarmclock.max-duration}")
+    private String maxDuration;
+
+    private MusicRepository musicRepository;
 
     private final static String MUSIC_PLAYING = "Music is Playing";
     private final static String MUSIC_PAUSED = "Music is Paused";
@@ -87,6 +90,15 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
                 return MUSIC_PLAYING;
             } else {
                 stop();
+            }
+        }
+
+        // Be sure that timer is stopped before
+        if(timerThread != null) {
+            try {
+                timerThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
@@ -147,8 +159,8 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
                 play(song);
 
                 // Run Timer (to limit time of running)
-                stopTimer();
-                timer = new Timer("Music", 3600, this::stop, DEBUG);
+                destroyTimer();
+                timer = new Timer("Music", Long.parseLong(maxDuration), this::stop, DEBUG);
                 timerThread = new Thread(timer, "Music Timer");
                 timerThread.start();
 
@@ -189,7 +201,14 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         return null;
     }
 
+
     private void stopTimer() {
+        if (timer != null) {
+            ((Timer) timer).stopIt();
+        }
+    }
+    // WARNING: A thread cannot kill itself by using a callback function call!
+    private void destroyTimer() {
         if (timer != null) {
             ((Timer) timer).stopIt();
             try {
