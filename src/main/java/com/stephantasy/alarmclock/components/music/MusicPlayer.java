@@ -12,31 +12,40 @@ import static javax.sound.sampled.Clip.LOOP_CONTINUOUSLY;
 
 public class MusicPlayer implements Runnable {
 
+    private int id;
     private MusicCallback callback;
     private AudioInputStream audioIn = null;
     private Clip clip = null;
     private InputStream file;
     private VolumeManager volumeManager;
     private long volumeDuration;
+    private boolean loop;
     private boolean DEBUG;
 
-    public MusicPlayer(InputStream file, long volumeDuration, boolean debug) {
+    public MusicPlayer(InputStream file, long volumeDuration, boolean loop, boolean debug) {
         this.file = file;
         this.callback = null;
         this.volumeDuration = volumeDuration;
+        this.loop = loop;
         this.DEBUG = debug;
     }
 
-    public MusicPlayer(InputStream file, MusicCallback musicIsDone) {
+    public MusicPlayer(int id, InputStream file, MusicCallback musicIsDone, long volumeDuration, boolean loop, boolean debug) {
+        this.id = id;
         this.file = file;
-        callback = musicIsDone;
+        this.callback = musicIsDone;
+        this.volumeDuration = volumeDuration;
+        this.loop = loop;
+        this.DEBUG = debug;
     }
 
 
     public void start() {
         if (clip != null) {
-            // The loop has to be placed here, otherwise it wont loop anymore after a Pause (even if the clip was already defined as LOOP_CONTINUOUSLY before. Bug?)
-            clip.loop(LOOP_CONTINUOUSLY);
+            if(loop) {
+                // The loop has to be placed here, otherwise it wont loop anymore after a Pause (even if the clip was already defined as LOOP_CONTINUOUSLY before. Bug?)
+                clip.loop(LOOP_CONTINUOUSLY);
+            }
             clip.start();
         }
     }
@@ -68,6 +77,10 @@ public class MusicPlayer implements Runnable {
         }
     }
 
+    public boolean isStillRunning(){
+        return clip.isRunning();
+    }
+
     @Override
     public void run() {
         try {
@@ -80,23 +93,30 @@ public class MusicPlayer implements Runnable {
                 if (event.getType() == LineEvent.Type.STOP) {
                     // Specific action if asked
                     if (callback != null) {
-                        callback.musicIsFinished();
+                        callback.musicIsFinished(this);
                     }
                     // Stop the Volume Manager (if it is not finished)
-                    volumeManager.stopIt();
+                    if (volumeManager != null) {
+                        volumeManager.stopIt();
+                    }
+                    stop();
                 }
             });
             clip.open(audioIn);
 
             // Set Volume to minimum
             FloatControl control = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-            control.setValue(control.getMinimum());
-
-            start();
 
             // Volume Control
-            volumeManager = new VolumeManager(clip, volumeDuration, DEBUG);
-            new Thread(volumeManager).start();
+            if (volumeDuration > 0) {
+                control.setValue(control.getMinimum());
+                volumeManager = new VolumeManager(clip, volumeDuration, DEBUG);
+                new Thread(volumeManager).start();
+            }else{
+                control.setValue(control.getMaximum());
+            }
+
+            start();
 
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e1) {
             e1.printStackTrace();

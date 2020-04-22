@@ -19,7 +19,8 @@ alarmclock:
   max-duration: 120
   # Music folder
   music-folder: musics/
-  # Domoticz
+  sound-folder: sounds/
+  short-sound: shortSound.wav
 
 #
 server:

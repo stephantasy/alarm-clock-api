@@ -9,15 +9,24 @@ public class Timer implements Runnable {
 
     private final long INTERVAL = 1000;     // milliseconds
 
-    private TimerCallback callback;
+    private TimerCallback endCallback;
+    private TimerCallback otherCallback;
     private final long duration;    // In second
     private boolean DEBUG;
     private boolean shouldStop;
     private String name;
 
-    public Timer(String name, long duration, TimerCallback callback, boolean DEBUG) {
+    public Timer(String name, long duration, TimerCallback endCallback, boolean DEBUG) {
         this.duration = duration;
-        this.callback = callback;
+        this.endCallback = endCallback;
+        this.DEBUG = DEBUG;
+        this.name = name;
+    }
+
+    public Timer(String name, long duration, TimerCallback endCallback, TimerCallback callback, boolean DEBUG) {
+        this.duration = duration;
+        this.endCallback = endCallback;
+        this.otherCallback = callback;
         this.DEBUG = DEBUG;
         this.name = name;
     }
@@ -38,8 +47,11 @@ public class Timer implements Runnable {
             } catch (InterruptedException e) {
                 // ignore
             }
+            if(otherCallback != null){
+                otherCallback.doIt();
+            }
         }
-        callback.timeout();
+        endCallback.doIt();
         if (DEBUG) LOG.info("*** Time Out! (" + name + ") ***");
     }
 

@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +39,10 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
     @Value("${alarmclock.music-folder}")
     private String musicFolder;
+    @Value("${alarmclock.sound-folder}")
+    private String soundFolder;
+    @Value("${alarmclock.short-sound}")
+    private String shortSound;
 
     @Value("${alarmclock.max-duration}")
     private String maxDuration;
@@ -49,8 +54,13 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private final static String MUSIC_STOPPED = "Music is Stopped";
     private static final String MUSIC_NONE = "No music is playing";
 
+    private static final int SOUND_INTERVAL = 10;   // In minute
+    private static final int TIME_BETWEEN_SOUNDS = 500;   // In millisecond
+    private static final int MAX_PLAYED_SOUND = 10;
+
     @Autowired
     ResourceLoader resourceLoader;
+
     private boolean isPaused = false;
     private Runnable player;
     private Runnable timer;
@@ -58,8 +68,12 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private long volumeDuration = 5; // in second
     private Stream<Path> walk;
 
+    // Short Time
+    private int nbPlayed;
+    private LocalDateTime nextShortSoundTime;
+
     @Autowired
-    private MusicManager(MusicRepository musicRepository){
+    private MusicManager(MusicRepository musicRepository) {
         this.musicRepository = musicRepository;
     }
 
@@ -91,18 +105,18 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
             } else {
                 stop();
             }
-        }
 
-        // Be sure that timer is stopped before
-        if(timerThread != null) {
-            try {
-                timerThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            // Be sure that timer is stopped before
+            if (timerThread != null) {
+                try {
+                    timerThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        player = new MusicPlayer(file, volumeDuration, DEBUG);
+        player = new MusicPlayer(file, volumeDuration, true, DEBUG);
         new Thread(player).start();
         return MUSIC_PLAYING;
     }
@@ -146,27 +160,61 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
                 throw new FetchAlarmException("Light not found with id: " + id);
             }
             Music music = optMusic.get();
-
             if (DEBUG) LOG.info("      => The music " + music.getName() + " is played");
 
             try {
                 // Set the volume duration
                 this.volumeDuration = music.getDelayBeforeFullSound();
 
-                // Get Music
-                InputStream song = getRandomSong();
+                // Reset
+                destroyTimer();
 
-                play(song);
+                // Short Sound init
+                nbPlayed = 0;
+                nextShortSoundTime = LocalDateTime.now().plusMinutes(SOUND_INTERVAL);
+
 
                 // Run Timer (to limit time of running)
-                destroyTimer();
-                timer = new Timer("Music", Long.parseLong(maxDuration), this::stop, DEBUG);
+                timer = new Timer("Music", Long.parseLong(maxDuration), this::stop, this::playShortSound, DEBUG);
                 timerThread = new Thread(timer, "Music Timer");
                 timerThread.start();
+
+
+                // Play main Song
+                InputStream song = getRandomSong();
+                play(song);
 
             } catch (Exception e) {
                 throw new CustomHttpException("Music not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
+        }
+    }
+
+    // TODO: make it a thread?
+    // This is a sound that is played every 10 minutes to remind time passed since the beginning
+    private void playShortSound() {
+        // if time has come
+        if (LocalDateTime.now().isAfter(nextShortSoundTime)) {
+            nbPlayed++;
+            if(nbPlayed > MAX_PLAYED_SOUND) nbPlayed = MAX_PLAYED_SOUND;
+            nextShortSoundTime = LocalDateTime.now().plusSeconds(25);
+            for (int i = 0 ; i < nbPlayed ; i++) {
+                Runnable shortSoundThreadTemp = new MusicPlayer(getRemindTimeSong(), 0, false, DEBUG);
+                new Thread(shortSoundThreadTemp).start();
+                try {
+                    Thread.sleep(TIME_BETWEEN_SOUNDS);
+                } catch (InterruptedException e) {
+                    // Sleep Exception, don't care
+                }
+            }
+        }
+    }
+    private InputStream getRemindTimeSong() {
+        String musicToPlay = soundFolder + shortSound;
+        try {
+            return new FileInputStream(musicToPlay);
+        } catch (FileNotFoundException e) {
+            throw new CustomHttpException("File " + musicToPlay + " not found!", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
 
@@ -207,6 +255,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
             ((Timer) timer).stopIt();
         }
     }
+
     // WARNING: A thread cannot kill itself by using a callback function call!
     private void destroyTimer() {
         if (timer != null) {
