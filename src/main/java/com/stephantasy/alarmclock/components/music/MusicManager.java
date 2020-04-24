@@ -54,7 +54,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
     private final static String MUSIC_STOPPED = "Music is Stopped";
     private static final String MUSIC_NONE = "No music is playing";
 
-    private static final int SOUND_INTERVAL = 10;   // In minute
+    private static final int SOUND_INTERVAL = 10*60;   // In second
     private static final int TIME_BETWEEN_SOUNDS = 500;   // In millisecond
     private static final int MAX_PLAYED_SOUND = 10;
 
@@ -171,7 +171,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
 
                 // Short Sound init
                 nbPlayed = 0;
-                nextShortSoundTime = LocalDateTime.now().plusMinutes(SOUND_INTERVAL);
+                nextShortSoundTime = LocalDateTime.now().plusSeconds(SOUND_INTERVAL);
 
 
                 // Run Timer (to limit time of running)
@@ -197,7 +197,7 @@ public class MusicManager implements MusicService, ApplicationListener<AlarmEven
         if (LocalDateTime.now().isAfter(nextShortSoundTime)) {
             nbPlayed++;
             if(nbPlayed > MAX_PLAYED_SOUND) nbPlayed = MAX_PLAYED_SOUND;
-            nextShortSoundTime = LocalDateTime.now().plusSeconds(25);
+            nextShortSoundTime = LocalDateTime.now().plusSeconds(SOUND_INTERVAL);
             for (int i = 0 ; i < nbPlayed ; i++) {
                 Runnable shortSoundThreadTemp = new MusicPlayer(getRemindTimeSong(), 0, false, DEBUG);
                 new Thread(shortSoundThreadTemp).start();
